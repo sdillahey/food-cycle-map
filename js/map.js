@@ -10,15 +10,15 @@ function searchThisArea(lat, long) {
 
 // GOOGLE MAP
 let map;
+var opened_info_window = false;
 async function initMap() {
-	var map = new google.maps.Map(document.getElementById("map"), {
+	map = new google.maps.Map(document.getElementById("map"), {
 		center: { lat: 34.0354899, lng: -118.2439235 },
 	    zoom: 11,
 	});
-	var marker;
-	let places = await getPlaces();
+	var places = await getPlaces();
 	places.forEach(function(place) {
-		marker = new google.maps.Marker({
+		var marker = new google.maps.Marker({
 			position: new google.maps.LatLng(getLatitude(place), getLongitude(place)),
 			map: map,
 			title: getName(place)
@@ -28,6 +28,10 @@ async function initMap() {
 			content: contentString,
 		});
 		marker.addListener("click", () => {
+			if(opened_info_window) {
+				opened_info_window.close();
+			}
+			opened_info_window = infowindow;
 			infowindow.open(map, marker);
 		});
 	});
