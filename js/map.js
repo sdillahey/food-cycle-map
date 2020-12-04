@@ -91,12 +91,14 @@ async function fetchFoodOasis(latitude=34.035, longitude=-118.244) {
 
 // Helper Functions
 function buildLocationInfo(place) {
+	var name_line = getWebsite(place) ? `<p><b><a href=${getWebsite(place)}>${getName(place)}</a></b></p>` : `<p><b>${getName(place)}</b></p>`
 	var mailing_address = buildMailingAddress(place);
 	var info = '<div id="locationBodyContent">' +
-		`<p><b><a href=${getWebsite(place)}>${getName(place)}</a></b></p>` +
+		name_line +
 		`<p>${getPhone(place)}</p>` +
 		`<p>${mailing_address[0]}</p>` +
-		`<p>${mailing_address[1]}</p>`
+		`<p>${mailing_address[1]}</p>` +
+		'</div>'
 	return info
 }
 
