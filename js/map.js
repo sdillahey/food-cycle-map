@@ -1,47 +1,73 @@
-// Public Methods
-// on center_changed, display search this area button
-// on click, searchThisArea
-function searchThisArea(lat, long) {
-	// on button click
-	// get map coordinates
-	// fetch new foodoasis data
-	// repopulate map
-}
-
 // GOOGLE MAP
 let map;
+var markers = [];
 var opened_info_window = false;
 async function initMap() {
 	map = new google.maps.Map(document.getElementById("map"), {
 		center: { lat: 34.0354899, lng: -118.2439235 },
-	    zoom: 11,
+	    zoom: 13,
 	});
 	var places = await getPlaces();
 	places.forEach(function(place) {
-		var marker = new google.maps.Marker({
-			position: new google.maps.LatLng(getLatitude(place), getLongitude(place)),
-			map: map,
-			title: getName(place)
-		});
-		var contentString = buildLocationInfo(place)
-		var infowindow = new google.maps.InfoWindow({
-			content: contentString,
-		});
-		marker.addListener("click", () => {
-			if(opened_info_window) {
-				opened_info_window.close();
-			}
-			opened_info_window = infowindow;
-			infowindow.open(map, marker);
-		});
+		markers.push(createMarker(place));
+	});
+	google.maps.event.addListener(map, "dragend", function () {
+		displaySearchButton();
+		google.maps.event.clearListeners(map, "dragend");
 	});
 }
 
-function mapChange() {
-	google.maps.event.addListener(map, "center_changed", function() {
-	  var center = this.getCenter();
-	  var latitude = center.lat();
-	  var longitude = center.lng();
+function createMarker(place) {
+	var marker = new google.maps.Marker({
+		position: new google.maps.LatLng(getLatitude(place), getLongitude(place)),
+		map: map,
+		title: getName(place)
+	});
+	var contentString = buildLocationInfo(place)
+	var infowindow = new google.maps.InfoWindow({
+		content: contentString,
+	});
+	marker.addListener("click", () => {
+		if(opened_info_window) {
+			opened_info_window.close();
+		}
+		opened_info_window = infowindow;
+		infowindow.open(map, marker);
+	});
+	return marker
+}
+
+function displaySearchButton() {
+	var search_button = document.createElement('div');
+	var search_button_ui = document.createElement('div');
+	search_button_ui.setAttribute("id", "search-button-ui");
+	search_button_ui.title = "Click to search this area";
+	var search_button_text = document.createElement('div');
+	search_button_text.setAttribute("id", "search-button-text");
+	search_button_text.innerHTML = "Search This Area";
+	search_button_ui.appendChild(search_button_text)
+	search_button.appendChild(search_button_ui)
+	search_button_ui.addEventListener("click", () => {
+		var center = map.getCenter();
+		var latitude = center.lat();
+		var longitude = center.lng();
+		searchThisArea(latitude, longitude)
+	});
+	map.controls[google.maps.ControlPosition.TOP_CENTER].push(search_button);
+}
+
+async function searchThisArea(lat, long) {
+	// clear existing markers
+	markers.forEach((marker) => {
+		marker.setMap(null)
+	});
+	markers = [];
+
+	// fetch new FoodOasis data
+	var places = await getPlaces(lat, long);
+	// re-populate map
+	places.forEach(function(place) {
+		markers.push(createMarker(place));
 	});
 }
 
@@ -59,7 +85,7 @@ async function getPlaces(lat, long) {
 // FoodOasis API
 // GET FoodOasis Response Data
 async function fetchFoodOasis(latitude=34.035, longitude=-118.244) {
-  let response = await fetch(`https://foodoasis.la/api/stakeholderbests?categoryIds[]=1&categoryIds[]=9&latitude=${latitude}&longitude=${longitude}&distance=6&isInactive=false&verificationStatusId=0&tenantId=1`);
+  let response = await fetch(`https://foodoasis.la/api/stakeholderbests?categoryIds[]=1&categoryIds[]=9&latitude=${latitude}&longitude=${longitude}&distance=5&isInactive=false&verificationStatusId=0&tenantId=1`);
   return await response.json();
 }
 
