@@ -73,7 +73,6 @@ async function searchThisArea(lat, long) {
 
 
 // FOOD OASIS
-// Public Methods
 async function getPlaces(lat, long) {
 	try {
 		return await fetchFoodOasis(lat, long);
